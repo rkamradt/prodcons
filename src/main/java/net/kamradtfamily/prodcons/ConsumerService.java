@@ -1,7 +1,15 @@
 package net.kamradtfamily.prodcons;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -23,6 +31,12 @@ public class ConsumerService {
 
   @Autowired
   KafkaListenerEndpointRegistry registry;
+  @Autowired
+  private AvroCodec avroCodec;
+  @Autowired
+  private EncryptionBean encryptionBean;
+  @Autowired
+  private ObjectMapper objectMapper;
 
   private ConcurrentLinkedDeque<HelloWorld> cache = new ConcurrentLinkedDeque<>();
 
@@ -30,12 +44,29 @@ public class ConsumerService {
       topics = "${kafka.topic}",
       groupId = "${kafka.groupId}",
       containerFactory = "kafkaListenerContainerFactory")
-  public void listen(HelloWorld message, Acknowledgment ack) {
-    cache.add(message);
-    ack.acknowledge();
-    if(cache.size() >= cacheSize) {
-      pause();
+  public void listen(byte [] message, Acknowledgment ack) {
+    try {
+      ack.acknowledge();
+      ImmutablePair<String, String> payloadWithRequestId =
+          getDecryptedPayload(message);
+      cache.add(objectMapper.readValue(payloadWithRequestId.getRight(), HelloWorld.class));
+      if(cache.size() >= cacheSize) {
+        pause();
+      }
+    } catch(Throwable ex) {
+      log.error("kafka listener threw exception during processing", ex);
     }
+  }
+
+  public ImmutablePair<String, String> getDecryptedPayload(
+      byte[] data)
+      throws BadPaddingException, IllegalBlockSizeException, IOException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException {
+    KafkaMessage kafkaMessage =
+        avroCodec.avroBytesToKafkaMessage(
+            encryptionBean.decryptByteArray(data));
+    return new ImmutablePair<>(
+        kafkaMessage.getMetadata().getRequestId(),
+        new String(kafkaMessage.getContent()));
   }
 
   public HelloWorld pull() {

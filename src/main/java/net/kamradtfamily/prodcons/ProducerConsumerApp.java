@@ -19,21 +19,27 @@ public class ProducerConsumerApp implements ApplicationListener<KafkaEvent> {
 
 
     IntStream.range(0, 10).forEach(i ->
-      producer.sendMessage(HelloWorld.builder()
-          .message("hello world " + i)
-          .name("me")
-          .build())
-    );
+    {
+      try {
+        producer.sendKafkaMessage(HelloWorld.builder()
+            .message("hello world " + i)
+            .name("me")
+            .build());
+      } catch (Exception e) {
+        throw new RuntimeException();
+      }
+    });
 
     Thread.sleep(10000);
 
     IntStream.range(0, 100).forEach(i -> {
       HelloWorld hw = consumer.pull();
-      log.info("cached Messasge from group " + hw);
+      log.info("cached Messasge " + hw);
     });
 
     context.close();
   }
+
   @Override
   public void onApplicationEvent(KafkaEvent event) {
     log.info(event.toString());

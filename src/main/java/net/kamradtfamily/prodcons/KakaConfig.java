@@ -6,6 +6,8 @@ import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.serialization.ByteArrayDeserializer;
+import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,7 +50,7 @@ public class KakaConfig {
   }
 
   @Bean
-  public ProducerFactory<String, HelloWorld> helloWorldProducerFactory() {
+  public ProducerFactory<String, byte []> helloWorldProducerFactory() {
     Map<String, Object> configProps = new HashMap<>();
     configProps.put(
         ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
@@ -58,17 +60,17 @@ public class KakaConfig {
         StringSerializer.class);
     configProps.put(
         ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-        JsonSerializer.class);
+        ByteArraySerializer.class);
     return new DefaultKafkaProducerFactory<>(configProps);
   }
 
   @Bean
-  public KafkaTemplate<String, HelloWorld> helloWorldKafkaTemplate() {
+  public KafkaTemplate<String, byte []> helloWorldKafkaTemplate() {
     return new KafkaTemplate<>(helloWorldProducerFactory());
   }
 
   @Bean
-  public ConsumerFactory<String, HelloWorld> helloWorldConsumerFactory() {
+  public ConsumerFactory<String, byte []> helloWorldConsumerFactory() {
     Map<String, Object> props = new HashMap<>();
     props.put(
         ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
@@ -81,16 +83,19 @@ public class KakaConfig {
         StringDeserializer.class);
     props.put(
         ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
-        HelloWorld.class);
+        ByteArrayDeserializer.class);
     props.put(
         ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG,
         Boolean.FALSE);
-    return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), new JsonDeserializer<>(HelloWorld.class));
+    props.put(
+        ConsumerConfig.MAX_POLL_RECORDS_CONFIG,
+        "10");
+    return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), new ByteArrayDeserializer());
   }
 
   @Bean
-  public ConcurrentKafkaListenerContainerFactory<String, HelloWorld> kafkaListenerContainerFactory() {
-    ConcurrentKafkaListenerContainerFactory<String, HelloWorld> factory =
+  public ConcurrentKafkaListenerContainerFactory<String, byte[]> kafkaListenerContainerFactory() {
+    ConcurrentKafkaListenerContainerFactory<String, byte[]> factory =
         new ConcurrentKafkaListenerContainerFactory<>();
     factory.setConsumerFactory(helloWorldConsumerFactory());
     factory.getContainerProperties().setAckOnError(false);
