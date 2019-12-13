@@ -31,9 +31,12 @@ public class ProducerService {
   @Autowired
   private ObjectMapper objectMapper;
 
-  public void sendMessage(byte [] message) {
+  public void sendMessage(Byte [] message) {
+    byte[] data = new byte[message.length];
+    for(int i = 0; i < message.length; i++)
+      data[i] = message[i];
 
-    kafkaTemplate.send(topic, message).addCallback(new ListenableFutureCallback<SendResult<String, byte []>>() {
+    kafkaTemplate.send(topic, data).addCallback(new ListenableFutureCallback<SendResult<String, byte []>>() {
 
       @Override
       public void onSuccess(SendResult<String, byte []> result) {
@@ -47,21 +50,19 @@ public class ProducerService {
       }
     });
   }
-  public byte[] generateMessages(String requestId, String payload, String eventAction, String eventAt)
+  public Byte[] generateMessages(String requestId, String payload, String eventAction, String eventAt)
       throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, NoSuchPaddingException, IOException {
     byte[] bytes = payload.getBytes();
     KafkaMetadata kafkaMetadata = KafkaMetadata.builder()
         .eventAction(eventAction)
-        .payload(payload)
         .eventAt(eventAt)
         .requestId(requestId)
         .build();
     KafkaMessage encryptedMessage = KafkaMessage.builder()
-        .content(bytes)
+        .content(encryptionBean.encryptByteArray(bytes))
         .metadata(kafkaMetadata)
         .build();
-    return encryptionBean.encryptByteArray(
-        avroCodec.kafkaMessageToAvroBytes(encryptedMessage));
+    return avroCodec.kafkaMessageToAvroBytes(encryptedMessage);
   }
 
   public void sendKafkaMessage(HelloWorld message)

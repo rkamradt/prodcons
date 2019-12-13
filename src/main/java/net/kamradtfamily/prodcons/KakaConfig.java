@@ -21,11 +21,7 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
-import org.springframework.kafka.listener.AbstractMessageListenerContainer;
 import org.springframework.kafka.listener.ContainerProperties.AckMode;
-import org.springframework.kafka.listener.SeekToCurrentErrorHandler;
-import org.springframework.kafka.support.serializer.JsonDeserializer;
-import org.springframework.kafka.support.serializer.JsonSerializer;
 
 @Configuration
 @EnableKafka
@@ -79,17 +75,14 @@ public class KakaConfig {
         ConsumerConfig.GROUP_ID_CONFIG,
         groupId);
     props.put(
-        ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
-        StringDeserializer.class);
-    props.put(
-        ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
-        ByteArrayDeserializer.class);
-    props.put(
         ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG,
         Boolean.FALSE);
     props.put(
         ConsumerConfig.MAX_POLL_RECORDS_CONFIG,
         "10");
+    props.put(
+        ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG,
+        false);
     return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), new ByteArrayDeserializer());
   }
 

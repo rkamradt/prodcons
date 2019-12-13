@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class AvroCodec {
 
-  public byte[] kafkaMessageToAvroBytes(KafkaMessage message) throws IOException {
+  public Byte[] kafkaMessageToAvroBytes(KafkaMessage message) throws IOException {
     Schema schema = ReflectData.get().getSchema(KafkaMessage.class);
     final ReflectData reflectData = new ReflectData();
     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -27,13 +27,23 @@ public class AvroCodec {
     binaryEncoder.flush();
     byteArrayOutputStream.flush();
     byteArrayOutputStream.close();
-    return byteArrayOutputStream.toByteArray();
+    byte [] data = byteArrayOutputStream.toByteArray();
+    Byte[] ret = new Byte[data.length];
+    for(int i = 0; i < data.length; i++)
+      ret[i] = data[i];
+    return ret;
   }
 
-  public KafkaMessage avroBytesToKafkaMessage(byte[] data) throws IOException {
+  public KafkaMessage avroBytesToKafkaMessage(Byte[] data) throws IOException {
+    if(data == null) {
+      return null;
+    }
     Schema schema = ReflectData.get().getSchema(KafkaMessage.class);
     final ReflectData reflectData = new ReflectData();
-    Decoder decoder = DecoderFactory.get().binaryDecoder(data, null);
+    byte[] ret = new byte[data.length];
+    for(int i = 0; i < data.length; i++)
+      ret[i] = data[i];
+    Decoder decoder = DecoderFactory.get().binaryDecoder(ret, null);
     ReflectDatumReader<KafkaMessage> datumReader = new ReflectDatumReader<>(schema, schema, reflectData);
     return datumReader.read(null, decoder);
   }

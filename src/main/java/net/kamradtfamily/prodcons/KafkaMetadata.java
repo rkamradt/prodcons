@@ -15,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 @AllArgsConstructor
 public class KafkaMetadata {
   private String requestId;
-  private String payload;
   private String eventAction;
   private String eventAt;
 }
