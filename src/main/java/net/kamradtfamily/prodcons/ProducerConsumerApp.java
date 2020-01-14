@@ -1,6 +1,8 @@
 package net.kamradtfamily.prodcons;
 
+import com.sun.org.apache.xalan.internal.xsltc.compiler.FlowList;
 import lombok.extern.slf4j.Slf4j;
+import net.kamradtfamily.flow.FlowListImplementation;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationListener;
@@ -18,7 +20,7 @@ public class ProducerConsumerApp implements ApplicationListener<KafkaEvent> {
     mainBean.run();
     System.out.println("hello world");
     Thread.sleep(10000);
-
+    FlowListImplementation.executor.shutdown(); // find a better way to shutdown
     context.close();
   }
 

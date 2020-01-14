@@ -5,6 +5,6 @@ import net.kamradtfamily.flow.FlowListImplementation;
 import org.springframework.stereotype.Component;
 
 @Component
-public class KafkaSourceFlow extends FlowListImplementation<Optional<Byte[]>> {
+public class KafkaProduceFlow extends FlowListImplementation<Optional<HelloWorld>> {
 
 }

@@ -36,19 +36,7 @@ public class ProducerService {
     for(int i = 0; i < message.length; i++)
       data[i] = message[i];
 
-    kafkaTemplate.send(topic, data).addCallback(new ListenableFutureCallback<SendResult<String, byte []>>() {
-
-      @Override
-      public void onSuccess(SendResult<String, byte []> result) {
-        log.info("Sent message=[" + message +
-            "] with offset=[" + result.getRecordMetadata().offset() + "]");
-      }
-      @Override
-      public void onFailure(Throwable ex) {
-        log.info("Unable to send message=["
-            + message + "] due to : " + ex.getMessage());
-      }
-    });
+    kafkaTemplate.send(topic, data);
   }
   public Byte[] generateMessages(String requestId, String payload, String eventAction, String eventAt)
       throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, NoSuchPaddingException, IOException {
