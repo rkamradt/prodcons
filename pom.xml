@@ -24,6 +24,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <jib.maven-plugin-version>1.7.0</jib.maven-plugin-version>
     </properties>
 
     <dependencies>
@@ -98,6 +99,19 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <version>${jib.maven-plugin-version}</version>
+                <configuration>
+                  <to>
+                    <image>docker.io/rlkamradt/prodcons</image>
+                    <tags>
+                      <tag>0.0.1</tag>
+                    </tags>
+                  </to>
+                </configuration>
             </plugin>
         </plugins>
     </build>

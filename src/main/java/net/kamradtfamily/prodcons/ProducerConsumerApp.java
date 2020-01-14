@@ -16,7 +16,7 @@ public class ProducerConsumerApp implements ApplicationListener<KafkaEvent> {
 
     MainBean mainBean = context.getBean(MainBean.class);
     mainBean.run();
-
+    System.out.println("hello world");
     Thread.sleep(10000);
 
     context.close();
