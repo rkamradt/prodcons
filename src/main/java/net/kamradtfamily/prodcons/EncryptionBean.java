@@ -14,14 +14,8 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class EncryptionBean {
-  @Value("${aes.secret.key.value}")
-  private String aesSecretKeyValue;
-  @Value("${aes.iv.salt.value}")
-  private String aesIvSaltValue;
-  @Value("${aes.payload.secret.key.value}")
-  private String aesPayloadSecretKeyValue;
-  @Value("${aes.payload.iv.salt.value}")
-  private String aesPayloadIvSaltValue;
+  @Value("${encryption.key.value}")
+  private String encryptionKeyValue;
 
   public byte[] decryptByteArray(
       byte[] input)
@@ -33,7 +27,7 @@ public class EncryptionBean {
   public Cipher getCipher(int cipherMode)
       throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException {
     Cipher cipher = null;
-    SecretKeySpec secretKeySpec = new SecretKeySpec(aesPayloadSecretKeyValue.getBytes(), "AES");
+    SecretKeySpec secretKeySpec = new SecretKeySpec(encryptionKeyValue.getBytes(), "AES");
     cipher = Cipher.getInstance("AES");
     cipher.init(cipherMode, secretKeySpec);
     return cipher;
